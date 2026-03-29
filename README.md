@@ -85,11 +85,11 @@ nvidia-smi
 - Use `nvidia-smi` after rebooting to verify drivers are installed and working
 
 ### `install_docker.sh`
-**Purpose:** Docker Engine installation  
+**Purpose:** Docker Engine installation and sudo-less access configuration  
 **Frequency:** As-needed  
 **Requires:** sudo, curl, internet connection
 
-Installs Docker Engine on any Linux instance by downloading and executing Docker's official installer script.
+Installs Docker Engine on any Linux instance by downloading and executing Docker's official installer script, then automatically configures the current user to run docker commands without `sudo`. After installation, the script automatically spawns a new shell where you can immediately test docker.
 
 **Usage:**
 ```bash
@@ -100,13 +100,47 @@ sudo bash install_docker.sh
 1. Downloads Docker's official installation script from `get.docker.com`
 2. Executes the installer to set up Docker Engine, Buildx, Compose, and all dependencies
 3. Cleans up the temporary installer file
-4. Confirms installation completion
+4. Adds the current user to the `docker` group for sudo-less access
+5. Verifies docker group access automatically with `sg docker`
+6. **Automatically spawns a new shell** where docker is ready to use
+7. Displays fallback instructions if automation isn't available
+
+**After running:**
+The script will automatically open a docker-ready shell where you can immediately test:
+
+```bash
+# In the automatically spawned shell:
+docker --version
+docker ps
+# Any docker command works without sudo
+```
+
+Then type `exit` to return to the original shell.
+
+**Future terminals:** All new terminal windows will also have docker access automatically (no additional steps needed).
+
+**If the script can't automatically spawn a shell:**
+You can manually activate docker group membership:
+
+**Option 1 - Activate in current shell (temporary, this session only):**
+```bash
+newgrp docker
+docker --version  # Now works without sudo in this shell
+```
+
+**Option 2 - Permanent (recommended):**
+```bash
+logout  # Log out completely
+# Then log back in
+docker --version  # Now works without sudo in all new shells
+```
 
 **Important:**
 - ⚠️ This script downloads and executes Docker's official installer — review [Docker's installation docs](https://docs.docker.com/engine/install/) for details
+- ⚠️ **Security**: Users in the docker group can run containers with root privileges. Only add trusted users to the docker group.
 - Works on any Linux distribution (Debian, Ubuntu, CentOS, Fedora, etc.)
 - Requires internet connection to download the installer
-- Always review downloaded scripts before executing with sudo
+- The automatic shell spawn feature requires the `sg` utility (standard on all Linux systems)
 
 ---
 
