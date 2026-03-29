@@ -49,7 +49,7 @@ cd /path/to/Script-Hub && sudo bash daily_update.sh
 5. `sudo apt clean` — Clean package cache
 6. `flatpak update -y` — Update flatpak apps (if installed)
 
-**Note:** All operations are non-interactive (`-y` flags). Run with `DRY_RUN=1` to preview without executing (if implemented).
+**Note:** All operations are non-interactive (`-y` flags). Run as `sudo bash daily_update.sh`.
 
 ### `install_nvidia_drivers.sh`
 **Purpose:** Install NVIDIA drivers on Ubuntu/Debian systems  
@@ -85,11 +85,11 @@ nvidia-smi
 - Use `nvidia-smi` after rebooting to verify drivers are installed and working
 
 ### `install_docker.sh`
-**Purpose:** Docker Engine installation and sudo-less access configuration  
+**Purpose:** Docker Engine installation with immediate sudo-less access verification  
 **Frequency:** As-needed  
 **Requires:** sudo, curl, internet connection
 
-Installs Docker Engine on any Linux instance by downloading and executing Docker's official installer script, then automatically configures the current user to run docker commands without `sudo`. After installation, the script automatically spawns a new shell where you can immediately test docker.
+Installs Docker Engine on any Linux instance by downloading and executing Docker's official installer script, then configures the current user to run docker commands without `sudo`. The script automatically verifies that docker works in the current session and provides instructions for permanent activation.
 
 **Usage:**
 ```bash
@@ -101,38 +101,30 @@ sudo bash install_docker.sh
 2. Executes the installer to set up Docker Engine, Buildx, Compose, and all dependencies
 3. Cleans up the temporary installer file
 4. Adds the current user to the `docker` group for sudo-less access
-5. Verifies docker group access automatically with `sg docker`
-6. **Automatically spawns a new shell** where docker is ready to use
-7. Displays fallback instructions if automation isn't available
+5. Verifies docker works in the current session using a temporary `newgrp` subshell
+6. Reports verification result and shows next steps
 
 **After running:**
-The script will automatically open a docker-ready shell where you can immediately test:
+The script verifies that Docker works in your current session. If verification succeeds, you can start using docker immediately:
 
 ```bash
-# In the automatically spawned shell:
-docker --version
 docker ps
-# Any docker command works without sudo
+docker run hello-world
 ```
 
-Then type `exit` to return to the original shell.
+**For permanent activation** (so docker works without needing `newgrp` in all future terminal sessions):
 
-**Future terminals:** All new terminal windows will also have docker access automatically (no additional steps needed).
+**Option 1 - Log out and back in (recommended):**
+```bash
+logout
+# Log back in
+docker ps  # Now works without any additional steps
+```
 
-**If the script can't automatically spawn a shell:**
-You can manually activate docker group membership:
-
-**Option 1 - Activate in current shell (temporary, this session only):**
+**Option 2 - Activate in current session only:**
 ```bash
 newgrp docker
-docker --version  # Now works without sudo in this shell
-```
-
-**Option 2 - Permanent (recommended):**
-```bash
-logout  # Log out completely
-# Then log back in
-docker --version  # Now works without sudo in all new shells
+docker ps  # Works for this terminal session only
 ```
 
 **Important:**
@@ -140,7 +132,8 @@ docker --version  # Now works without sudo in all new shells
 - ⚠️ **Security**: Users in the docker group can run containers with root privileges. Only add trusted users to the docker group.
 - Works on any Linux distribution (Debian, Ubuntu, CentOS, Fedora, etc.)
 - Requires internet connection to download the installer
-- The automatic shell spawn feature requires the `sg` utility (standard on all Linux systems)
+- Docker works immediately in the current session after verification (use `docker` command directly)
+- For permanent activation across all future terminal sessions, log out and back in
 
 ---
 

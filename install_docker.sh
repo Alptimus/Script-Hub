@@ -29,59 +29,36 @@ sudo usermod -aG docker "$CURRENT_USER"
 echo ""
 echo "✓ Docker installation complete!"
 
-# Verify docker group access without requiring logout
+# Verify docker access in current session using newgrp subshell
 echo ""
-echo "Verifying docker group access..."
+echo "Verifying docker access in current session..."
 
-if command -v sg &> /dev/null; then
-    if sg docker -c 'docker --version' &> /dev/null; then
-        echo "✓ Docker group verification successful!"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "Launching docker-ready shell for immediate testing..."
-        echo "Type 'exit' when done to return to this shell."
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        
-        # Launch new shell with updated group membership
-        exec su - "$CURRENT_USER"
-    else
-        # Verification failed - provide fallback
-        echo "⚠️  Could not immediately verify docker access in current context."
-        echo ""
-        echo "This is normal - docker group membership requires a new login session."
-        echo ""
-        echo "Next steps to activate docker for user '$CURRENT_USER':"
-        echo ""
-        echo "Option 1 - Activate in current shell (temporary, this session only):"
-        echo "  newgrp docker"
-        echo "  docker --version"
-        echo ""
-        echo "Option 2 - Permanent activation (recommended):"
-        echo "  1. Log out completely"
-        echo "  2. Log back in"
-        echo "  3. Run: docker --version"
-        echo ""
-        echo "⚠️  Security: docker group members can run containers with root privileges."
-        echo "   Only add trusted users to the docker group."
-    fi
+if newgrp docker << 'VERIFY_EOF'
+docker ps >/dev/null 2>&1
+VERIFY_EOF
+then
+    echo "✓ Docker verified! You can start using docker now."
+    echo ""
+    echo "Test it with:"
+    echo "  docker ps"
+    echo "  docker run hello-world"
 else
-    # sg command not available - provide manual instructions
-    echo "⚠️  Could not verify docker access (sg utility not found)."
-    echo ""
-    echo "Docker has been installed and user '$CURRENT_USER' added to docker group."
-    echo ""
-    echo "To activate docker without sudo, choose one option:"
-    echo ""
-    echo "Option 1 - Activate in current shell (temporary, this session only):"
-    echo "  newgrp docker"
-    echo "  docker --version"
-    echo ""
-    echo "Option 2 - Permanent activation (recommended):"
-    echo "  1. Log out completely"
-    echo "  2. Log back in"
-    echo "  3. Run: docker --version"
-    echo ""
-    echo "⚠️  Security: docker group members can run containers with root privileges."
-    echo "   Only add trusted users to the docker group."
+    echo "ℹ️  Docker configured. Activate with: newgrp docker"
 fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "For permanent activation in all future terminal sessions:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Option 1 - Log out and back in (recommended):"
+echo "  logout"
+echo "  # Log back in"
+echo "  docker ps"
+echo ""
+echo "Option 2 - Activate in current session only:"
+echo "  newgrp docker"
+echo "  docker ps"
+echo ""
+echo "⚠️  Security: docker group members can run containers with root privileges."
+echo "   Only add trusted users to the docker group."
