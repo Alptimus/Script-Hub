@@ -51,6 +51,45 @@ cd /path/to/Script-Hub && sudo bash daily_update.sh
 
 **Note:** All operations are non-interactive (`-y` flags). Run with `DRY_RUN=1` to preview without executing (if implemented).
 
+### `install_nvidia_drivers.sh`
+**Purpose:** Install NVIDIA drivers on Ubuntu/Debian systems  
+**Frequency:** As-needed  
+**Requires:** sudo, lspci (pciutils), ubuntu-drivers-common
+
+Quickly installs NVIDIA drivers on AWS EC2 instances and bare metal machines with NVIDIA GPUs:
+- Detects NVIDIA GPU presence (`lspci`)
+- Updates package lists and installs `ubuntu-drivers-common`
+- Auto-installs latest compatible NVIDIA drivers
+- Verifies installation with `nvidia-smi`
+- Prompts for system reboot (required to activate drivers)
+
+**Usage:**
+```bash
+# Preview mode (show what would run without executing):
+DRY_RUN=1 bash install_nvidia_drivers.sh
+
+# Install drivers (requires sudo):
+sudo bash install_nvidia_drivers.sh
+```
+
+**What it does:**
+1. Checks for NVIDIA GPU using `lspci` — exits gracefully if no GPU found
+2. `sudo apt update -y` — Refresh package lists
+3. Installs `ubuntu-drivers-common` if missing
+4. `sudo ubuntu-drivers autoinstall -y` — Detects and installs latest compatible driver
+5. Verifies with `nvidia-smi` (if drivers are activated)
+6. Prompts for reboot (drivers require system reboot to activate)
+
+**Important:** 
+- ⚠️ This script **requires an NVIDIA GPU** — it exits immediately if no GPU is detected
+- ⚠️ Drivers require a **system reboot** to activate; press `y` when prompted or reboot manually later
+- Use `DRY_RUN=1` to preview what the script would do without making changes
+- The script is interactive — it will pause to ask for reboot confirmation
+
+**Troubleshooting:**
+- If `nvidia-smi` is not found after reboot, drivers may need additional configuration or may be incompatible with your GPU
+- Check Ubuntu driver support: `ubuntu-drivers devices` (before running this script)
+
 ### `get-docker.sh`
 **Purpose:** Docker Engine installation  
 **Frequency:** As-needed  
@@ -114,6 +153,7 @@ When reviewing or modifying scripts, check [.github/instructions/shell-scripts.i
 ## Files
 
 - `daily_update.sh` — Daily system updates and cleanup
+- `install_nvidia_drivers.sh` — NVIDIA driver installation for AWS EC2 / bare metal
 - `get-docker.sh` — Docker Engine installation (external source)
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — Detailed development guide and conventions
 - [.github/prompts/new-script.prompt.md](.github/prompts/new-script.prompt.md) — Script generation prompt
