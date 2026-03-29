@@ -84,25 +84,29 @@ nvidia-smi
 - ⚠️ Drivers require a **system reboot** to activate — they will not work until after reboot
 - Use `nvidia-smi` after rebooting to verify drivers are installed and working
 
-### `get-docker.sh`
+### `install_docker.sh`
 **Purpose:** Docker Engine installation  
 **Frequency:** As-needed  
 **Requires:** sudo, curl, internet connection
 
-⚠️ **Important:** This script is maintained by Docker and fetched from their official repository. It contains Docker's installation logic for Linux. Review [Docker's installation docs](https://docs.docker.com/engine/install/) for details.
+Installs Docker Engine on any Linux instance by downloading and executing Docker's official installer script.
 
 **Usage:**
 ```bash
-sudo bash get-docker.sh
+sudo bash install_docker.sh
 ```
 
 **What it does:**
-- Detects your Linux distribution
-- Adds Docker's official repository
-- Installs Docker Engine, Buildx, Compose, and dependencies
-- Sets up the daemon
+1. Downloads Docker's official installation script from `get.docker.com`
+2. Executes the installer to set up Docker Engine, Buildx, Compose, and all dependencies
+3. Cleans up the temporary installer file
+4. Confirms installation completion
 
-**Security Note:** This script follows Docker's recommended installation procedure. Always review downloaded scripts before executing them.
+**Important:**
+- ⚠️ This script downloads and executes Docker's official installer — review [Docker's installation docs](https://docs.docker.com/engine/install/) for details
+- Works on any Linux distribution (Debian, Ubuntu, CentOS, Fedora, etc.)
+- Requires internet connection to download the installer
+- Always review downloaded scripts before executing with sudo
 
 ---
 
@@ -148,7 +152,7 @@ When reviewing or modifying scripts, check [.github/instructions/shell-scripts.i
 
 - `daily_update.sh` — Daily system updates and cleanup
 - `install_nvidia_drivers.sh` — NVIDIA driver installation for AWS EC2 / bare metal
-- `get-docker.sh` — Docker Engine installation (external source)
+- `install_docker.sh` — Docker Engine installation for any Linux instance
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — Detailed development guide and conventions
 - [.github/prompts/new-script.prompt.md](.github/prompts/new-script.prompt.md) — Script generation prompt
 - [.github/instructions/shell-scripts.instructions.md](.github/instructions/shell-scripts.instructions.md) — Review checklist for scripts
